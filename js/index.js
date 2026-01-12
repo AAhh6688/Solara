@@ -6297,4 +6297,248 @@ function addToPlaylist(song) {
   console.log('添加歌曲到播放列表:', song.name);
 }
 
+// ==========================================
+// Solara升级功能 - 粘贴到 js/index.js 末尾
+// ==========================================
 
+(function() {
+  'use strict';
+  
+  // 1. 自动获取歌词
+  async function autoFetchLyrics(song) {
+    if (!song || !song.id) return;
+    
+    try {
+      const source = song.source || document.getElementById('source-select')?.value || 'wy';
+      const response = await fetch(`/api/${source}?action=lyric&id=${song.id}`);
+      const data = await response.json();
+      
+      const lyricText = data.lrc || data.lyric || '[00:00.00]暂无歌词';
+      displayLyrics(lyricText);
+    } catch (error) {
+      console.error('歌词获取失败:', error);
+      displayLyrics('[00:00.00]歌词加载失败');
+    }
+  }
+  
+  // 2. 显示歌词
+  function displayLyrics(lyricText) {
+    // 尝试多个可能的歌词容器class
+    const containers = [
+      '.lyrics-content',
+      '.lyric-container', 
+      '#lyrics',
+      '.lyrics'
+    ];
+    
+    let lyricContainer = null;
+    for (const selector of containers) {
+      lyricContainer = document.querySelector(selector);
+      if (lyricContainer) break;
+    }
+    
+    if (!lyricContainer) {
+      console.warn('未找到歌词容器');
+      return;
+    }
+    
+    lyricContainer.innerHTML = '';
+    const lines = lyricText.split('\n');
+    
+    lines.forEach(line => {
+      if (line.trim()) {
+        const p = document.createElement('p');
+        const text = line.replace(/\[\d+:\d+\.\d+\]/g, '').trim();
+        if (text) {
+          p.textContent = text;
+          lyricContainer.appendChild(p);
+        }
+      }
+    });
+  }
+  
+  // 3. 监听播放事件
+  function setupLyricsListener() {
+    const audio = document.querySelector('audio');
+    if (!audio) {
+      console.warn('未找到audio元素');
+      return;
+    }
+    
+    audio.addEventListener('play', function() {
+      // 尝试多种方式获取当前歌曲
+      let currentSong = null;
+      
+      // 方式1: 从全局变量获取
+      if (window.currentSong) {
+        currentSong = window.currentSong;
+      }
+      // 方式2: 从data属性获取
+      else if (audio.dataset.songId) {
+        currentSong = {
+          id: audio.dataset.songId,
+          source: audio.dataset.source
+        };
+      }
+      
+      if (currentSong && currentSong.id) {
+        autoFetchLyrics(currentSong);
+      }
+    });
+  }
+  
+  // 4. 音源自动切换
+  function setupSourceSwitching() {
+    const audio = document.querySelector('audio');
+    if (!audio) return;
+    
+    const allSources = ['wy', 'joox', 'kw', 'kg', 'qq', 'mg'];
+    let retryCount = 0;
+    const maxRetries = 6;
+    
+    audio.addEventListener('error', async function() {
+      if (retryCount >= maxRetries) {
+        console.error('所有音源都失败了');
+        retryCount = 0;
+        
+        // 尝试播放下一首
+        const nextBtn = document.querySelector('[class*="next"]') || 
+                       document.querySelector('[data-action="next"]');
+        if (nextBtn) nextBtn.click();
+        return;
+      }
+      
+      retryCount++;
+      console.log(`播放失败,尝试第 ${retryCount} 次切换音源...`);
+      
+      // 获取当前音源
+      const sourceSelect = document.getElementById('source-select');
+      const currentSource = sourceSelect?.value || 'wy';
+      
+      // 切换到下一个音源
+      const currentIndex = allSources.indexOf(currentSource);
+      const nextIndex = (currentIndex + 1) % allSources.length;
+      const nextSource = allSources[nextIndex];
+      
+      if (sourceSelect) {
+        sourceSelect.value = nextSource;
+      }
+      
+      // 获取当前歌曲ID
+      let songId = audio.dataset.songId;
+      if (!songId && window.currentSong) {
+        songId = window.currentSong.id;
+      }
+      
+      if (songId) {
+        try {
+          const response = await fetch(`/api/${nextSource}?action=url&id=${songId}`);
+          const data = await response.json();
+          
+          if (data && data.url) {
+            audio.src = data.url;
+            audio.play();
+            console.log(`✅ 成功切换到音源: ${nextSource}`);
+            retryCount = 0;
+          }
+        } catch (error) {
+          console.error(`${nextSource} 切换失败:`, error);
+        }
+      }
+    });
+  }
+  
+  // 5. 歌单搜索
+  function setupPlaylistSearch() {
+    const searchContainer = document.querySelector('.search-container') || 
+                           document.querySelector('[class*="search"]');
+    
+    if (!searchContainer || document.getElementById('playlist-btn')) return;
+    
+    const btn = document.createElement('button');
+    btn.id = 'playlist-btn';
+    btn.textContent = '📋 歌单';
+    btn.style.cssText = `
+      margin-left: 10px;
+      padding: 8px 16px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    `;
+    
+    btn.addEventListener('mouseover', () => {
+      btn.style.transform = 'translateY(-2px)';
+      btn.style.boxShadow = '0 6px 20px rgba(102, 126, 234, 0.4)';
+    });
+    
+    btn.addEventListener('mouseout', () => {
+      btn.style.transform = 'translateY(0)';
+      btn.style.boxShadow = 'none';
+    });
+    
+    btn.addEventListener('click', async function() {
+      const id = prompt('请输入歌单ID:\n\n💡提示:\n- 网易云: 纯数字ID\n- QQ音乐: 字母+数字\n- 酷狗: 数字ID\n\n例如: 123456');
+      
+      if (!id) return;
+      
+      const source = document.getElementById('source-select')?.value || 'wy';
+      
+      try {
+        btn.textContent = '⏳ 加载中...';
+        btn.disabled = true;
+        
+        const response = await fetch(`/api/${source}?action=playlist&id=${id}`);
+        const data = await response.json();
+        
+        if (data && data.playlist && data.playlist.tracks) {
+          const songs = data.playlist.tracks;
+          alert(`✅ 找到歌单: ${data.playlist.name}\n共 ${songs.length} 首歌曲\n\n即将添加到播放列表`);
+          
+          // 添加到播放列表
+          songs.forEach(song => {
+            // 触发原有的添加逻辑
+            const event = new CustomEvent('addToPlaylist', { detail: song });
+            document.dispatchEvent(event);
+          });
+          
+          console.log(`成功导入 ${songs.length} 首歌曲`);
+        } else {
+          alert('❌ 未找到歌单,请检查ID是否正确');
+        }
+      } catch (error) {
+        console.error('歌单搜索失败:', error);
+        alert('❌ 歌单搜索失败,请重试');
+      } finally {
+        btn.textContent = '📋 歌单';
+        btn.disabled = false;
+      }
+    });
+    
+    searchContainer.appendChild(btn);
+  }
+  
+  // 6. 初始化
+  function init() {
+    console.log('🎵 Solara升级功能加载中...');
+    
+    setupLyricsListener();
+    setupSourceSwitching();
+    setupPlaylistSearch();
+    
+    console.log('✅ Solara升级功能已启用');
+    console.log('   - 自动歌词 ✓');
+    console.log('   - 歌单搜索 ✓');
+    console.log('   - 音源切换 ✓');
+  }
+  
+  // 等待DOM加载完成
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
