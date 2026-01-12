@@ -2307,3 +2307,26 @@ input[type="range"]:active::-moz-range-thumb {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
 }
+
+/* Solara升级样式 */
+#playlist-btn {
+  margin-left: 10px !important;
+  padding: 8px 16px !important;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  border: none !important;
+  border-radius: 8px !important;
+  color: white !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+}
+
+#playlist-btn:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4) !important;
+}
+
+#playlist-btn:disabled {
+  opacity: 0.6 !important;
+  cursor: not-allowed !important;
+}
