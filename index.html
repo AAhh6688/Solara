@@ -118,7 +118,7 @@
         </div>
         <div class="header">
             <h1>Solara</h1>
-            <div class="warning">Made by Wet Dream Boy，免费API来自GD音乐台(music.gdstudio.xyz)，仅供学习交流使用，请支持正版音乐奥！</div>
+            <div class="warning">Made by Wet Dream Boy，仅供学习交流使用，请支持正版音乐奥！</div>
             <div class="theme-switch-wrapper">
                 <button id="themeToggleButton" class="theme-toggle-button" type="button" aria-label="切换深浅色模式">
                     <i class="fas fa-sun theme-icon theme-icon--sun" aria-hidden="true"></i>
@@ -522,3 +522,31 @@
 </script>
 </body>
 </html>
+<!-- 音源选择下拉框 (在搜索框附近) -->
+<select id="source-select" class="source-select">
+  <option value="wy">网易云音乐</option>
+  <option value="joox">JOOX音乐</option>
+  <option value="kw">酷我音乐</option>
+  <option value="kg">酷狗音乐</option> <!-- 新增 -->
+  <option value="qq">QQ音乐</option>   <!-- 新增 -->
+  <option value="mg">咪咕音乐</option>  <!-- 新增 -->
+</select>
+
+<!-- 新增: 歌单搜索功能 -->
+<div class="playlist-search-section">
+  <input type="text" id="playlist-search-input" placeholder="输入歌单ID搜索歌单" />
+  <button id="playlist-search-btn" class="btn-search">搜索歌单</button>
+</div>
+
+<!-- 新增: 歌单结果显示区域 -->
+<div id="playlist-results" class="playlist-results hidden">
+  <div class="playlist-header">
+    <img id="playlist-cover" src="" alt="歌单封面" />
+    <div class="playlist-info">
+      <h3 id="playlist-name"></h3>
+      <p id="playlist-creator"></p>
+      <button id="import-playlist-btn" class="btn-primary">导入全部到播放列表</button>
+    </div>
+  </div>
+  <div id="playlist-songs" class="playlist-songs"></div>
+</div>
