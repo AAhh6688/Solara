@@ -6101,3 +6101,200 @@ function getNextSource(currentSource) {
   return sources[nextIndex];
 }
 
+// ========================================
+// 🎵 新增功能: 自动歌词 + 歌单搜索 + 音源切换
+// ========================================
+
+// 1️⃣ 自动获取歌词功能
+async function autoFetchLyrics(song) {
+  try {
+    const source = song.source || document.getElementById('source-select').value;
+    const response = await fetch(`/api/${source}?action=lyric&id=${song.id}`);
+    const data = await response.json();
+    
+    if (data && data.lrc) {
+      displayLyrics(data.lrc);
+    } else if (data && data.lyric) {
+      displayLyrics(data.lyric);
+    } else {
+      displayLyrics('[00:00.00]暂无歌词');
+    }
+  } catch (error) {
+    console.error('歌词获取失败:', error);
+    displayLyrics('[00:00.00]歌词加载失败');
+  }
+}
+
+// 显示歌词到界面
+function displayLyrics(lyricText) {
+  const lyricContainer = document.querySelector('.lyrics-content');
+  if (!lyricContainer) return;
+  
+  lyricContainer.innerHTML = '';
+  const lines = lyricText.split('\n');
+  
+  lines.forEach(line => {
+    if (line.trim()) {
+      const p = document.createElement('p');
+      // 移除时间标签 [00:00.00]
+      p.textContent = line.replace(/\[\d+:\d+\.\d+\]/g, '').trim();
+      if (p.textContent) {
+        lyricContainer.appendChild(p);
+      }
+    }
+  });
+}
+
+// 2️⃣ 监听播放事件,自动获取歌词
+const audioElement = document.querySelector('audio');
+if (audioElement) {
+  audioElement.addEventListener('play', function() {
+    const currentSong = getCurrentPlayingSong(); // 需要根据你的代码获取当前歌曲
+    if (currentSong && currentSong.id) {
+      autoFetchLyrics(currentSong);
+    }
+  });
+}
+
+// 3️⃣ 音源自动切换功能
+const sourceBackupIndex = {
+  wy: 0, joox: 0, kw: 0, kg: 0, qq: 0, mg: 0
+};
+
+async function switchMusicSource(song) {
+  const currentSource = document.getElementById('source-select').value;
+  const allSources = ['wy', 'joox', 'kw', 'kg', 'qq', 'mg'];
+  
+  // 移除当前音源
+  const otherSources = allSources.filter(s => s !== currentSource);
+  
+  for (const source of otherSources) {
+    try {
+      console.log(`尝试切换到音源: ${source}`);
+      const response = await fetch(`/api/${source}?action=url&id=${song.id}`);
+      const data = await response.json();
+      
+      if (data && data.url) {
+        audioElement.src = data.url;
+        audioElement.play();
+        console.log(`✅ 成功切换到音源: ${source}`);
+        return true;
+      }
+    } catch (error) {
+      console.error(`${source} 音源失败:`, error);
+    }
+  }
+  
+  console.error('所有音源都失败了');
+  return false;
+}
+
+// 4️⃣ 监听播放错误,自动切换音源
+if (audioElement) {
+  audioElement.addEventListener('error', async function() {
+    console.error('播放失败,尝试切换音源...');
+    const currentSong = getCurrentPlayingSong();
+    
+    if (currentSong) {
+      const switched = await switchMusicSource(currentSong);
+      if (!switched) {
+        alert('所有音源播放失败,已跳过此歌曲');
+        playNext(); // 播放下一首
+      }
+    }
+  });
+}
+
+// 5️⃣ 歌单搜索功能 (简化版,融入原搜索)
+// 在搜索结果中添加"搜索歌单"按钮
+function addPlaylistSearchButton() {
+  const searchContainer = document.querySelector('.search-container');
+  if (!searchContainer || document.getElementById('playlist-search-btn')) return;
+  
+  const playlistBtn = document.createElement('button');
+  playlistBtn.id = 'playlist-search-btn';
+  playlistBtn.textContent = '📋 搜索歌单';
+  playlistBtn.className = 'playlist-search-toggle';
+  playlistBtn.style.cssText = 'margin-left: 10px; padding: 8px 16px;';
+  
+  playlistBtn.addEventListener('click', function() {
+    const playlistId = prompt('请输入歌单ID\n\n提示:\n- 网易云: 纯数字ID\n- QQ音乐: 字母+数字\n- 酷狗: 数字ID');
+    if (playlistId) {
+      searchPlaylist(playlistId);
+    }
+  });
+  
+  searchContainer.appendChild(playlistBtn);
+}
+
+// 搜索歌单
+async function searchPlaylist(playlistId) {
+  const source = document.getElementById('source-select').value;
+  
+  try {
+    const response = await fetch(`/api/${source}?action=playlist&id=${playlistId}`);
+    const data = await response.json();
+    
+    if (data && data.playlist && data.playlist.tracks) {
+      const songs = data.playlist.tracks;
+      alert(`找到歌单: ${data.playlist.name}\n共 ${songs.length} 首歌曲\n\n即将添加到播放列表`);
+      
+      // 添加到播放列表
+      songs.forEach(song => {
+        addToPlaylist(song); // 使用原有的添加播放列表函数
+      });
+    } else {
+      alert('未找到歌单,请检查ID是否正确');
+    }
+  } catch (error) {
+    console.error('歌单搜索失败:', error);
+    alert('歌单搜索失败,请重试');
+  }
+}
+
+// 6️⃣ 初始化新功能
+window.addEventListener('DOMContentLoaded', function() {
+  addPlaylistSearchButton(); // 添加歌单搜索按钮
+  console.log('✅ Solara升级功能已加载: 歌词/歌单/多音源');
+});
+
+// ========================================
+// 辅助函数 (根据原代码调整)
+// ========================================
+
+// 获取当前播放歌曲 (需要根据你的原代码调整)
+function getCurrentPlayingSong() {
+  // 这里需要根据你的原代码中获取当前歌曲的方式
+  // 例如: return state.currentSong;
+  // 或者: return playlist[currentIndex];
+  
+  // 临时方案: 从DOM获取
+  const songTitle = document.querySelector('.song-title');
+  const songArtist = document.querySelector('.song-artist');
+  
+  if (songTitle && songArtist) {
+    return {
+      name: songTitle.textContent,
+      artist: songArtist.textContent,
+      id: audioElement.getAttribute('data-song-id') // 需要在播放时设置
+    };
+  }
+  return null;
+}
+
+// 播放下一首 (需要根据你的原代码调整)
+function playNext() {
+  // 这里调用原代码中的下一首函数
+  // 例如: nextSong();
+  const nextBtn = document.querySelector('.control-next');
+  if (nextBtn) nextBtn.click();
+}
+
+// 添加到播放列表 (需要根据你的原代码调整)
+function addToPlaylist(song) {
+  // 这里调用原代码中的添加播放列表函数
+  // 例如: playlist.push(song);
+  console.log('添加歌曲到播放列表:', song.name);
+}
+
+
