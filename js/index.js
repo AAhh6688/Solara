@@ -5972,3 +5972,132 @@ function showNotification(message, type = "success") {
         notification.classList.remove("show");
     }, 3000);
 }
+
+// 在播放歌曲时自动获取歌词
+async function playSong(song) {
+  currentSong = song;
+  
+  // 播放音乐逻辑...
+  audio.src = song.url;
+  audio.play();
+  
+  // 🆕 自动搜索歌词
+  await autoFetchLyrics(song);
+}
+
+// 自动获取歌词函数
+async function autoFetchLyrics(song) {
+  try {
+    const source = song.source || 'wy';
+    const response = await fetch(`/api/${source}?action=lyric&id=${song.id}`);
+    const data = await response.json();
+    
+    if (data.lyric) {
+      displayLyrics(data.lyric);
+    } else {
+      displayLyrics('暂无歌词');
+    }
+  } catch (error) {
+    console.error('歌词获取失败:', error);
+    displayLyrics('歌词加载失败');
+  }
+}
+
+// 显示歌词
+function displayLyrics(lyricText) {
+  const lyricContainer = document.getElementById('lyric-container');
+  lyricContainer.innerHTML = '';
+  
+  // 解析LRC格式歌词
+  const lines = lyricText.split('\n');
+  lines.forEach(line => {
+    const lyricLine = document.createElement('p');
+    lyricLine.textContent = line.replace(/\[\d+:\d+\.\d+\]/g, '');
+    lyricContainer.appendChild(lyricLine);
+  });
+}
+
+// 歌单搜索功能
+document.getElementById('playlist-search-btn').addEventListener('click', async () => {
+  const playlistId = document.getElementById('playlist-search-input').value.trim();
+  const source = document.getElementById('source-select').value;
+  
+  if (!playlistId) {
+    alert('请输入歌单ID');
+    return;
+  }
+  
+  try {
+    const response = await fetch(`/api/${source}?action=playlist&id=${playlistId}`);
+    const data = await response.json();
+    
+    if (data.playlist) {
+      displayPlaylistResults(data.playlist);
+    }
+  } catch (error) {
+    console.error('歌单搜索失败:', error);
+    alert('歌单搜索失败,请检查ID是否正确');
+  }
+});
+
+// 显示歌单结果
+function displayPlaylistResults(playlist) {
+  document.getElementById('playlist-results').classList.remove('hidden');
+  document.getElementById('playlist-cover').src = playlist.coverUrl;
+  document.getElementById('playlist-name').textContent = playlist.name;
+  document.getElementById('playlist-creator').textContent = `创建者: ${playlist.creator}`;
+  
+  const songsContainer = document.getElementById('playlist-songs');
+  songsContainer.innerHTML = '';
+  
+  playlist.songs.forEach(song => {
+    const songItem = createSongItem(song);
+    songsContainer.appendChild(songItem);
+  });
+}
+
+// 导入歌单到播放列表
+document.getElementById('import-playlist-btn').addEventListener('click', () => {
+  const playlistSongs = Array.from(document.querySelectorAll('.playlist-songs .song-item'));
+  playlistSongs.forEach(songElement => {
+    const song = JSON.parse(songElement.dataset.song);
+    addToPlaylist(song);
+  });
+  alert(`成功导入 ${playlistSongs.length} 首歌曲到播放列表!`);
+});
+
+// 播放失败时自动切换音源
+audio.addEventListener('error', async function() {
+  console.error('播放失败,尝试切换音源...');
+  
+  const currentSource = currentSong.source;
+  const nextSource = getNextSource(currentSource);
+  
+  try {
+    // 使用下一个音源重新获取播放地址
+    const response = await fetch(`/api/${nextSource}?action=url&id=${currentSong.id}`);
+    const data = await response.json();
+    
+    if (data.url) {
+      currentSong.url = data.url;
+      currentSong.source = nextSource;
+      audio.src = data.url;
+      audio.play();
+      console.log(`已切换到音源: ${nextSource}`);
+    } else {
+      skipToNext(); // 如果所有音源都失败,跳到下一首
+    }
+  } catch (error) {
+    console.error('音源切换失败:', error);
+    skipToNext();
+  }
+});
+
+// 获取下一个音源
+function getNextSource(currentSource) {
+  const sources = ['wy', 'joox', 'kw', 'kg', 'qq', 'mg'];
+  const currentIndex = sources.indexOf(currentSource);
+  const nextIndex = (currentIndex + 1) % sources.length;
+  return sources[nextIndex];
+}
+
