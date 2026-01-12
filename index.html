@@ -135,7 +135,14 @@
                 <input type="text" id="searchInput" class="search-input" placeholder="搜索歌曲、歌手或专辑...">
                 <div class="source-select-wrapper" id="sourceSelectWrapper">
                     <button id="sourceSelectButton" class="source-select-btn" type="button" aria-haspopup="listbox" aria-expanded="false">
-                        <span id="sourceSelectLabel">网易云音乐</span>
+                       <select id="source-select">
+  <option value="wy">网易云音乐</option>
+  <option value="joox">JOOX</option>
+  <option value="kw">酷我音乐</option>
+  <option value="kg">酷狗音乐</option>
+  <option value="qq">QQ音乐</option>
+  <option value="mg">咪咕音乐</option>
+</select>
                         <i class="fas fa-chevron-down caret-icon" aria-hidden="true"></i>
                     </button>
                     <div id="sourceMenu" class="source-menu" role="listbox" aria-labelledby="sourceSelectButton"></div>
@@ -522,21 +529,6 @@
 </script>
 </body>
 </html>
-<!-- 音源选择下拉框 (在搜索框附近) -->
-<select id="source-select" class="source-select">
-  <option value="wy">网易云音乐</option>
-  <option value="joox">JOOX音乐</option>
-  <option value="kw">酷我音乐</option>
-  <option value="kg">酷狗音乐</option> <!-- 新增 -->
-  <option value="qq">QQ音乐</option>   <!-- 新增 -->
-  <option value="mg">咪咕音乐</option>  <!-- 新增 -->
-</select>
-
-<!-- 新增: 歌单搜索功能 -->
-<div class="playlist-search-section">
-  <input type="text" id="playlist-search-input" placeholder="输入歌单ID搜索歌单" />
-  <button id="playlist-search-btn" class="btn-search">搜索歌单</button>
-</div>
 
 <!-- 新增: 歌单结果显示区域 -->
 <div id="playlist-results" class="playlist-results hidden">
