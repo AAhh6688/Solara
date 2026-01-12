@@ -1,63 +1,91 @@
-import { getNextAPI, MUSIC_SOURCES } from '../lib/music-sources';
+import { getCurrentAPI, switchToNextAPI } from '../lib/api-sources';
 
-export async function onRequest(context) {
+export async function onRequest(context: any) {
   const { request } = context;
   const url = new URL(request.url);
   const action = url.searchParams.get('action');
   
   try {
-    const apiBase = MUSIC_SOURCES.mg[0];
-    
     switch (action) {
       case 'search':
-        const keyword = url.searchParams.get('keyword');
-        return await searchSong(apiBase, keyword);
+        return await searchSong(url);
       case 'url':
-        const id = url.searchParams.get('id');
-        return await getSongUrl(apiBase, id);
+        return await getSongUrl(url);
       case 'lyric':
-        const songId = url.searchParams.get('id');
-        return await getLyric(apiBase, songId);
+        return await getLyric(url);
       case 'playlist':
-        const playlistId = url.searchParams.get('id');
-        return await getPlaylist(apiBase, playlistId);
+        return await getPlaylist(url);
       default:
-        return new Response('Invalid action', { status: 400 });
+        return new Response(JSON.stringify({ error: 'Invalid action' }), { 
+          status: 400,
+          headers: { 'Content-Type': 'application/json' }
+        });
     }
-  } catch (error) {
-    const nextAPI = getNextAPI('mg');
-    console.log(`咪咕音乐API失败,切换到备份: ${nextAPI}`);
-    return new Response(JSON.stringify({ error: 'API失败' }), { status: 500 });
+  } catch (error: any) {
+    console.error('咪咕音乐API错误:', error);
+    const nextAPI = switchToNextAPI('mg');
+    return new Response(JSON.stringify({ 
+      error: '当前API失败,已自动切换备份',
+      nextAPI: nextAPI
+    }), { 
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 }
 
-async function searchSong(apiBase: string, keyword: string) {
-  const response = await fetch(`${apiBase}/search?keyword=${encodeURIComponent(keyword)}`);
+async function searchSong(url: URL) {
+  const keyword = url.searchParams.get('keyword') || '';
+  const page = url.searchParams.get('page') || '1';
+  
+  const apiBase = getCurrentAPI('mg');
+  const apiUrl = `${apiBase}?server=migu&type=search&keyword=${encodeURIComponent(keyword)}&page=${page}`;
+  
+  const response = await fetch(apiUrl);
   const data = await response.json();
+  
   return new Response(JSON.stringify(data), {
     headers: { 'Content-Type': 'application/json' }
   });
 }
 
-async function getSongUrl(apiBase: string, id: string) {
-  const response = await fetch(`${apiBase}/song?id=${id}`);
+async function getSongUrl(url: URL) {
+  const id = url.searchParams.get('id') || '';
+  
+  const apiBase = getCurrentAPI('mg');
+  const apiUrl = `${apiBase}?server=migu&type=url&id=${id}`;
+  
+  const response = await fetch(apiUrl);
   const data = await response.json();
+  
   return new Response(JSON.stringify(data), {
     headers: { 'Content-Type': 'application/json' }
   });
 }
 
-async function getLyric(apiBase: string, id: string) {
-  const response = await fetch(`${apiBase}/lyric?id=${id}`);
+async function getLyric(url: URL) {
+  const id = url.searchParams.get('id') || '';
+  
+  const apiBase = getCurrentAPI('mg');
+  const apiUrl = `${apiBase}?server=migu&type=lrc&id=${id}`;
+  
+  const response = await fetch(apiUrl);
   const data = await response.json();
+  
   return new Response(JSON.stringify(data), {
     headers: { 'Content-Type': 'application/json' }
   });
 }
 
-async function getPlaylist(apiBase: string, id: string) {
-  const response = await fetch(`${apiBase}/playlist?id=${id}`);
+async function getPlaylist(url: URL) {
+  const id = url.searchParams.get('id') || '';
+  
+  const apiBase = getCurrentAPI('mg');
+  const apiUrl = `${apiBase}?server=migu&type=playlist&id=${id}`;
+  
+  const response = await fetch(apiUrl);
   const data = await response.json();
+  
   return new Response(JSON.stringify(data), {
     headers: { 'Content-Type': 'application/json' }
   });
