@@ -1,66 +1,97 @@
-import { getNextAPI, MUSIC_SOURCES } from '../lib/music-sources';
+import { getCurrentAPI, switchToNextAPI } from '../lib/api-sources';
 
-export async function onRequest(context) {
+export async function onRequest(context: any) {
   const { request } = context;
   const url = new URL(request.url);
   const action = url.searchParams.get('action');
-  const keyword = url.searchParams.get('keyword');
   
   try {
-    // 使用第一个备份API
-    const apiBase = MUSIC_SOURCES.kg[0];
-    
     switch (action) {
       case 'search':
-        return await searchSong(apiBase, keyword);
+        return await searchSong(url);
       case 'url':
-        const id = url.searchParams.get('id');
-        return await getSongUrl(apiBase, id);
+        return await getSongUrl(url);
       case 'lyric':
-        const songId = url.searchParams.get('id');
-        return await getLyric(apiBase, songId);
+        return await getLyric(url);
       case 'playlist':
-        const playlistId = url.searchParams.get('id');
-        return await getPlaylist(apiBase, playlistId);
+        return await getPlaylist(url);
       default:
-        return new Response('Invalid action', { status: 400 });
+        return new Response(JSON.stringify({ error: 'Invalid action' }), { 
+          status: 400,
+          headers: { 'Content-Type': 'application/json' }
+        });
     }
-  } catch (error) {
-    // 失败后尝试下一个备份API
-    const nextAPI = getNextAPI('kg');
-    console.log(`酷狗API失败,切换到备份: ${nextAPI}`);
-    // 这里可以递归调用或重试逻辑
-    return new Response(JSON.stringify({ error: 'API失败' }), { status: 500 });
+  } catch (error: any) {
+    console.error('酷狗API错误:', error);
+    
+    // 尝试切换到下一个备份API
+    const nextAPI = switchToNextAPI('kg');
+    return new Response(JSON.stringify({ 
+      error: '当前API失败,已自动切换备份',
+      nextAPI: nextAPI
+    }), { 
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 }
 
-async function searchSong(apiBase: string, keyword: string) {
-  const response = await fetch(`${apiBase}/search?keyword=${encodeURIComponent(keyword)}`);
+// 搜索歌曲
+async function searchSong(url: URL) {
+  const keyword = url.searchParams.get('keyword') || '';
+  const page = url.searchParams.get('page') || '1';
+  
+  const apiBase = getCurrentAPI('kg');
+  const apiUrl = `${apiBase}?server=kugou&type=search&keyword=${encodeURIComponent(keyword)}&page=${page}`;
+  
+  const response = await fetch(apiUrl);
   const data = await response.json();
+  
   return new Response(JSON.stringify(data), {
     headers: { 'Content-Type': 'application/json' }
   });
 }
 
-async function getSongUrl(apiBase: string, id: string) {
-  const response = await fetch(`${apiBase}/song/url?id=${id}`);
+// 获取播放地址
+async function getSongUrl(url: URL) {
+  const id = url.searchParams.get('id') || '';
+  
+  const apiBase = getCurrentAPI('kg');
+  const apiUrl = `${apiBase}?server=kugou&type=url&id=${id}`;
+  
+  const response = await fetch(apiUrl);
   const data = await response.json();
+  
   return new Response(JSON.stringify(data), {
     headers: { 'Content-Type': 'application/json' }
   });
 }
 
-async function getLyric(apiBase: string, id: string) {
-  const response = await fetch(`${apiBase}/lyric?id=${id}`);
+// 获取歌词
+async function getLyric(url: URL) {
+  const id = url.searchParams.get('id') || '';
+  
+  const apiBase = getCurrentAPI('kg');
+  const apiUrl = `${apiBase}?server=kugou&type=lrc&id=${id}`;
+  
+  const response = await fetch(apiUrl);
   const data = await response.json();
+  
   return new Response(JSON.stringify(data), {
     headers: { 'Content-Type': 'application/json' }
   });
 }
 
-async function getPlaylist(apiBase: string, id: string) {
-  const response = await fetch(`${apiBase}/playlist/detail?id=${id}`);
+// 获取歌单
+async function getPlaylist(url: URL) {
+  const id = url.searchParams.get('id') || '';
+  
+  const apiBase = getCurrentAPI('kg');
+  const apiUrl = `${apiBase}?server=kugou&type=playlist&id=${id}`;
+  
+  const response = await fetch(apiUrl);
   const data = await response.json();
+  
   return new Response(JSON.stringify(data), {
     headers: { 'Content-Type': 'application/json' }
   });
