@@ -5562,17 +5562,13 @@ function updateOnlineHighlight() {
 
 const EXPLORE_RADAR_GENRES = [
     "流行",
-    "摇滚",
-    "古典音乐",
-    "民谣",
-    "电子",
-    "爵士",
-    "说唱",
-    "乡村",
-    "蓝调",
-    "R&B",
-    "金属",
-    "嘻哈",
+    "华语",
+    "抖音热门",
+    "古风",
+    "欧美流行",
+    "影视经典",
+    "KTV",
+    "粤语",
     "轻音乐",
 ];
 
@@ -5623,7 +5619,7 @@ async function exploreOnlineMusic() {
 
         const randomGenre = pickRandomExploreGenre();
         const source = pickRandomExploreSource();
-        const results = await API.search(randomGenre, source, 30, 1);
+        const results = await API.search(randomGenre, source, 100, 1);
 
         if (!Array.isArray(results) || results.length === 0) {
             showNotification("探索雷达：未找到歌曲", "error");
