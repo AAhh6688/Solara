@@ -5563,7 +5563,7 @@ function updateOnlineHighlight() {
 const EXPLORE_RADAR_GENRES = [
     "流行",
     "华语",
-    "抖音热门",
+    "抖音",
     "古风",
     "欧美流行",
     "影视经典",
