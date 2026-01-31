@@ -762,7 +762,18 @@ const savedCurrentPlaylist = (() => {
 
 // API配置 - 修复API地址和请求方式
 const API = {
-    baseUrl: "/proxy",
+    // 原来的代码：
+    // baseUrl: "/proxy",
+    
+    // 改为公共API（示例，需要找到可用的）
+    baseUrl: "music.gdstudio.org",  // 替换为实际可用的音乐API代理地址
+    
+    generateSignature: () => {
+        return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    },
+    
+    // ... 其余代码保持不变
+}
 
     generateSignature: () => {
         return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
