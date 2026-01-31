@@ -762,9 +762,6 @@ const savedCurrentPlaylist = (() => {
 
 // API配置 - 修复API地址和请求方式
 const API = {
-    // 原来的代码：
-    // baseUrl: "/proxy",
-    
     // 改为公共API（示例，需要找到可用的）
     baseUrl: "music.gdstudio.org",  // 替换为实际可用的音乐API代理地址
     
