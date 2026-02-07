@@ -1,557 +1,524 @@
 <!DOCTYPE html>
-<html lang="zh-CN" class="login-page-root">
+<html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>登录 - Solara</title>
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png">
-  <link rel="apple-touch-icon" sizes="180x180" href="/favicon.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-  <link rel="stylesheet" href="css/style.css">
-  <script>
-    (function () {
-      const ua = navigator.userAgent || "";
-      const isMobileUA = /android|iphone|ipad|ipod|mobile|blackberry|phone|opera mini|windows phone/i.test(ua);
-      const isSmallScreen = typeof window.matchMedia === "function" && window.matchMedia("(max-width: 820px)").matches;
-      const isMobile = isMobileUA || isSmallScreen;
-      window.__SOLARA_IS_MOBILE = isMobile;
-      if (!isMobile) {
-        document.documentElement.classList.add("desktop-view");
-        const desktopLink = document.createElement("link");
-        desktopLink.rel = "stylesheet";
-        desktopLink.href = "css/desktop.css";
-        desktopLink.id = "desktopStylesheet";
-        document.head.appendChild(desktopLink);
-        return;
-      }
-      document.documentElement.classList.add("mobile-view");
-      const link = document.createElement("link");
-      link.rel = "stylesheet";
-      link.href = "css/mobile.css";
-      link.id = "mobileStylesheet";
-      document.head.appendChild(link);
-      const setViewportUnit = () => {
-        const viewportHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
-        if (typeof viewportHeight === "number" && !Number.isNaN(viewportHeight)) {
-          document.documentElement.style.setProperty("--mobile-vh", `${viewportHeight}px`);
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Solara</title>
+    <meta name="apple-mobile-web-app-title" content="Solara">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png">
+    <link rel="shortcut icon" href="/favicon.png">
+    <link rel="mask-icon" href="/favicon.svg" color="#5bbad5">
+    <link rel="apple-touch-icon" sizes="180x180" href="/favicon.png">
+    <link rel="apple-touch-icon-precomposed" sizes="180x180" href="/favicon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <script>
+        (function () {
+            const ua = navigator.userAgent || "";
+            const isMobileUA = /android|iphone|ipad|ipod|mobile|blackberry|phone|opera mini|windows phone/i.test(ua);
+            const isSmallScreen = typeof window.matchMedia === "function" && window.matchMedia("(max-width: 820px)").matches;
+            const isMobile = isMobileUA || isSmallScreen;
+            window.__SOLARA_IS_MOBILE = isMobile;
+            if (!isMobile) {
+                document.documentElement.classList.add("desktop-view");
+                const desktopLink = document.createElement("link");
+                desktopLink.rel = "stylesheet";
+                desktopLink.href = "css/desktop.css";
+                desktopLink.id = "desktopStylesheet";
+                document.head.appendChild(desktopLink);
+                return;
+            }
+            document.documentElement.classList.add("mobile-view");
+            const link = document.createElement("link");
+            link.rel = "stylesheet";
+            link.href = "css/mobile.css";
+            link.id = "mobileStylesheet";
+            document.head.appendChild(link);
+            const setViewportUnit = () => {
+                const viewportHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+                document.documentElement.style.setProperty("--mobile-vh", `${viewportHeight}px`);
+            };
+
+            const applyBodyClass = () => {
+                if (document.body) {
+                    document.body.classList.add("mobile-view");
+                    setViewportUnit();
+                }
+            };
+            if (document.readyState === "loading") {
+                document.addEventListener("DOMContentLoaded", applyBodyClass, { once: true });
+            } else {
+                applyBodyClass();
+            }
+
+            window.addEventListener("resize", setViewportUnit);
+            window.addEventListener("orientationchange", setViewportUnit);
+            if (window.visualViewport) {
+                window.visualViewport.addEventListener("resize", setViewportUnit);
+                window.visualViewport.addEventListener("scroll", setViewportUnit);
+            }
+
+            setViewportUnit();
+        })();
+    </script>
+    <style id="safari-ios-26-fix">
+        /* --- Safari iOS 26 Fix --- */
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            overflow-x: hidden;
+            box-sizing: border-box;
         }
-      };
-      const updateLoginLayout = () => {
-        const body = document.body;
-        const viewport = window.visualViewport;
-        const rawWidth = viewport ? viewport.width : window.innerWidth;
-        const hasNumericWidth = typeof rawWidth === "number" && !Number.isNaN(rawWidth);
-        const fallbackWidth = window.innerWidth || document.documentElement.clientWidth || 0;
-        const width = hasNumericWidth ? rawWidth : fallbackWidth;
-        const orientationQuery = typeof window.matchMedia === "function" ? window.matchMedia("(orientation: portrait)") : null;
-        const isPortrait = orientationQuery ? orientationQuery.matches : window.innerHeight >= window.innerWidth;
-        const isNarrow = width <= 820;
-        if (body) {
-          body.classList.toggle("portrait-mobile", Boolean(isPortrait && isNarrow));
+        .login-shell {
+            position: relative;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-inline: auto;
         }
-        let scale = 1;
-        if (width) {
-          if (isPortrait && width < 430) {
-            scale = Math.min(1, Math.max(0.8, width / 430));
-          } else if (!isPortrait && width < 540) {
-            scale = Math.min(1, Math.max(0.85, width / 540));
-          }
+        body {
+            padding-left: max(env(safe-area-inset-left), 16px);
+            padding-right: max(env(safe-area-inset-right), 16px);
         }
-        document.documentElement.style.setProperty("--login-scale", scale.toFixed(4));
-      };
-      const handleLayoutChange = () => {
-        setViewportUnit();
-        updateLoginLayout();
-      };
-      const applyBodyClass = () => {
-        if (document.body) {
-          document.body.classList.add("mobile-view");
+        @supports (height: 100dvh) {
+            :root {
+                --mobile-vh: 100dvh;
+            }
         }
-        handleLayoutChange();
-      };
-      if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", applyBodyClass, { once: true });
-      } else {
-        applyBodyClass();
-      }
-      window.addEventListener("resize", handleLayoutChange);
-      window.addEventListener("orientationchange", handleLayoutChange);
-      if (window.visualViewport) {
-        window.visualViewport.addEventListener("resize", handleLayoutChange);
-        window.visualViewport.addEventListener("scroll", handleLayoutChange);
-      }
-      handleLayoutChange();
-    })();
-  </script>
-  <style>
-    :root {
-      --login-scale: 1;
-    }
+    </style>
+    <script>
+        (function fixMobileVH(){
+            document.documentElement.style.setProperty("--mobile-vh", window.innerHeight + "px");
+            window.addEventListener("resize", fixMobileVH);
+            window.addEventListener("orientationchange", fixMobileVH);
+        })();
+    </script>
 
-    html.login-page-root {
-      min-height: var(--mobile-vh, 100dvh);
-      height: auto;
-    }
-
-    html.login-page-root,
-    body.login-page {
-      overflow-x: hidden;
-    }
-
-    html.login-page-root.mobile-view {
-      height: auto;
-      overflow-y: auto;
-    }
-
-    body.login-page {
-      position: relative;
-      margin: 0;
-      padding: clamp(16px, 4vw, 40px);
-      font-family: 'Noto Sans SC', 'Segoe UI', Arial, sans-serif;
-      display: flex;
-      justify-content: center !important;
-      align-items: center !important;
-      min-height: var(--mobile-vh, 100dvh);
-      color: var(--text-color);
-      background: radial-gradient(circle at 20% 20%, rgba(26, 188, 156, 0.35), transparent 55%),
-                  radial-gradient(circle at 80% 0%, rgba(52, 152, 219, 0.28), transparent 50%),
-                  #07090f;
-      overflow-x: hidden;
-      overflow-y: auto;
-    }
-
-    body.login-page.mobile-view {
-      position: static;
-      inset: auto;
-      width: auto;
-      height: auto;
-      min-height: var(--mobile-vh, 100dvh);
-      padding: calc(env(safe-area-inset-top, 0px) + clamp(18px, 6vw, 32px))
-               clamp(18px, 6vw, 32px)
-               calc(env(safe-area-inset-bottom, 0px) + clamp(24px, 7vw, 36px));
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      overflow-y: auto;
-    }
-
-    body.login-page.mobile-view.portrait-mobile {
-      padding: calc(env(safe-area-inset-top, 0px) + clamp(20px, 8vw, 32px))
-               clamp(18px, 7vw, 28px)
-               calc(env(safe-area-inset-bottom, 0px) + clamp(26px, 9vw, 38px));
-    }
-
-    body.login-page.mobile-view .background-stage {
-      display: block;
-    }
-
-    .background-stage {
-      position: fixed;
-      inset: 0;
-      width: 100%;
-      max-width: 100vw;
-      box-sizing: border-box;
-      overflow: hidden;
-      pointer-events: none;
-      z-index: -2;
-    }
-
-    .background-stage__layer {
-      position: absolute;
-      inset: -40% -20%;
-      filter: blur(110px);
-      opacity: 0.8;
-      transform: rotate(5deg);
-      background: conic-gradient(from 180deg,
-        rgba(26, 188, 156, 0.55),
-        rgba(64, 224, 208, 0.35),
-        rgba(52, 152, 219, 0.4),
-        rgba(17, 17, 23, 0.8));
-      animation: auroraShift 18s ease-in-out infinite alternate;
-    }
-
-    .background-stage__layer::after {
-      content: "";
-      position: absolute;
-      inset: 20% 18% 15% 25%;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(255, 255, 255, 0.18), transparent 60%);
-      animation: pulse 12s ease-in-out infinite;
-    }
-
-    .background-stage__overlay {
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(135deg, rgba(5, 10, 18, 0.92) 0%, rgba(8, 17, 24, 0.65) 100%);
-      z-index: 1;
-    }
-
-    @keyframes auroraShift {
-      0% { transform: translateY(-5%) rotate(8deg) scale(1.1); }
-      50% { transform: translateY(3%) rotate(2deg) scale(1.05); }
-      100% { transform: translateY(-2%) rotate(-4deg) scale(1.12); }
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 0.45; transform: scale(1); }
-      50% { opacity: 0.8; transform: scale(1.1); }
-    }
-
-    .login-shell {
-      position: relative;
-      width: min(460px, 100%);
-      z-index: 2;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-inline: auto;
-      min-height: calc(var(--mobile-vh, 100dvh) - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
-    }
-
-    html.desktop-view .login-shell {
-      min-height: auto;
-    }
-
-    body.login-page.mobile-view .login-shell {
-      width: 100%;
-      max-width: 440px;
-      padding: 0;
-      min-height: auto;
-      flex: 1 1 auto;
-    }
-
-    body.login-page.mobile-view.portrait-mobile .login-shell {
-      min-height: auto;
-    }
-
-    .login-container {
-      background: linear-gradient(160deg, rgba(17, 21, 32, 0.9) 0%, rgba(14, 24, 29, 0.78) 100%);
-      border-radius: 28px;
-      padding: clamp(28px, 5vw, 40px);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      box-shadow:
-        0 30px 60px rgba(0, 0, 0, 0.55),
-        inset 0 0 0 1px rgba(255, 255, 255, 0.05);
-      display: flex;
-      flex-direction: column;
-      gap: clamp(20px, 4vw, 32px);
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
-      color: #f2f6f9;
-      width: 100%;
-      box-sizing: border-box;
-      transform: scale(var(--login-scale));
-      transform-origin: center;
-      transition: transform 0.25s ease;
-      will-change: transform;
-      margin-inline: auto;
-    }
-
-    body.login-page.mobile-view.portrait-mobile .login-container {
-      justify-content: center;
-    }
-
-    .login-header {
-      display: flex;
-      align-items: center;
-      gap: 18px;
-    }
-
-    .logo-circle {
-      width: 64px;
-      height: 64px;
-      border-radius: 20px;
-      background: linear-gradient(145deg, rgba(34, 48, 63, 0.85), rgba(22, 36, 48, 0.95));
-      border: 1px solid rgba(82, 233, 210, 0.25);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow:
-        0 18px 32px rgba(51, 211, 175, 0.28),
-        inset 0 0 18px rgba(82, 233, 210, 0.22);
-      overflow: hidden;
-    }
-
-    .logo-circle img {
-      width: 70%;
-      height: 70%;
-      object-fit: contain;
-      filter: brightness(0) invert(1) drop-shadow(0 0 10px rgba(146, 255, 236, 0.6));
-    }
-
-    .title-group {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .login-title {
-      font-size: clamp(1.9rem, 3vw, 2.2rem);
-      font-weight: 700;
-      margin: 0;
-      letter-spacing: 1px;
-      color: #ffffff;
-    }
-
-    .login-desc {
-      margin: 0;
-      color: rgba(255, 255, 255, 0.75);
-      font-size: 0.95rem;
-    }
-
-    .login-form {
-      display: flex;
-      flex-direction: column;
-      gap: 18px;
-    }
-
-    .field {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .field-label {
-      font-size: 0.9rem;
-      letter-spacing: 0.5px;
-      color: rgba(255, 255, 255, 0.76);
-    }
-
-    .input-wrapper {
-      position: relative;
-      display: flex;
-      align-items: center;
-      background: rgba(12, 18, 24, 0.75);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 16px;
-      padding: 12px 16px;
-      transition: border-color 0.3s ease, box-shadow 0.3s ease;
-    }
-
-    .input-wrapper:focus-within {
-      border-color: rgba(51, 211, 175, 0.8);
-      box-shadow: 0 0 0 3px rgba(51, 211, 175, 0.18);
-    }
-
-    .input-wrapper i {
-      color: rgba(255, 255, 255, 0.58);
-      font-size: 1.1rem;
-      margin-right: 12px;
-    }
-
-    .login-form input {
-      flex: 1;
-      background: transparent;
-      border: none;
-      outline: none;
-      color: #ffffff;
-      font-size: 1rem;
-      font-family: inherit;
-      letter-spacing: 1px;
-    }
-
-    .login-form input::placeholder {
-      color: rgba(255, 255, 255, 0.45);
-    }
-
-    .login-hint {
-      margin: 0;
-      font-size: 0.85rem;
-      color: rgba(255, 255, 255, 0.55);
-      line-height: 1.6;
-      text-align: center;
-    }
-
-    .login-form button {
-      padding: 14px 18px;
-      border: none;
-      border-radius: 16px;
-      background: linear-gradient(135deg, #2fd2a8, #1abc9c);
-      color: #ffffff;
-      font-size: 1rem;
-      font-weight: 600;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      cursor: pointer;
-      transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.3s ease;
-      box-shadow: 0 18px 35px rgba(42, 201, 165, 0.35);
-    }
-
-    .login-form button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 22px 40px rgba(42, 201, 165, 0.45);
-    }
-
-    .login-form button:active {
-      transform: translateY(0);
-      box-shadow: 0 14px 28px rgba(42, 201, 165, 0.35);
-    }
-
-    .login-footer {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-size: 0.8rem;
-      color: rgba(255, 255, 255, 0.4);
-      text-align: center;
-    }
-
-    .login-footer .status-dot {
-      display: inline-flex;
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: #33d3af;
-      box-shadow: 0 0 10px rgba(51, 211, 175, 0.5);
-    }
-
-    .login-footer .status-message {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    @media (max-width: 768px) {
-      body.login-page {
-        padding: clamp(16px, 4vw, 24px);
-      }
-
-      .login-container {
-        border-radius: 22px;
-        padding: clamp(24px, 6vw, 32px);
-        gap: 22px;
-      }
-
-      .login-header {
-        gap: 14px;
-      }
-
-      .logo-circle {
-        width: 56px;
-        height: 56px;
-      }
-
-      .login-footer {
-        flex-direction: column;
-        align-items: center;
-        gap: 8px;
-      }
-    }
-
-    @media (max-width: 480px) {
-      body.login-page {
-        padding: clamp(16px, 7vw, 24px);
-      }
-
-      body.login-page.mobile-view {
-        padding: calc(env(safe-area-inset-top, 0px) + clamp(16px, 7vw, 24px))
-                 clamp(16px, 7vw, 24px)
-                 calc(env(safe-area-inset-bottom, 0px) + clamp(22px, 8vw, 30px));
-      }
-
-      body.login-page .login-shell {
-        width: 100%;
-        max-width: 420px;
-      }
-
-      body.login-page .login-container {
-        padding: clamp(24px, 7vw, 32px);
-      }
-
-      .login-footer {
-        flex-direction: column;
-        align-items: center;
-        gap: 10px;
-      }
-    }
-  </style>
 </head>
-<body class="login-page">
-  <div class="background-stage">
-    <div class="background-stage__layer"></div>
-    <div class="background-stage__overlay"></div>
-  </div>
-  <main class="login-shell">
-    <section class="login-container">
-      <header class="login-header">
-        <div class="logo-circle" aria-hidden="true">
-          <img src="/favicon.svg" alt="">
+<body>
+    <div class="background-stage" id="backgroundStage" aria-hidden="true">
+        <div class="background-stage__layer background-stage__layer--base" id="backgroundBaseLayer"></div>
+        <div class="background-stage__layer background-stage__layer--transition" id="backgroundTransitionLayer"></div>
+    </div>
+    <div class="container" id="mainContainer">
+        <div class="mobile-toolbar" id="mobileToolbar" role="toolbar">
+            <button class="mobile-toolbar__button" id="mobileExploreButton" type="button" aria-label="探索雷达">
+                <i class="fas fa-satellite-dish" aria-hidden="true"></i>
+            </button>
+            <div class="mobile-toolbar__title" id="mobileToolbarTitle">Solara</div>
+            <div class="mobile-toolbar__actions">
+                <button class="mobile-toolbar__button" id="mobileSearchToggle" type="button" aria-label="打开搜索">
+                    <i class="fas fa-search" aria-hidden="true"></i>
+                </button>
+            </div>
         </div>
-        <div class="title-group">
-          <h1 class="login-title">Solara</h1>
-          <p class="login-desc">访问受到保护</p>
+        <div class="header">
+            <h1>Solara</h1>
+            <div class="warning">Made by Wet Dream Boy，免费API来自GD音乐台(music.gdstudio.xyz)，仅供学习交流使用，请支持正版音乐奥！</div>
+            <div class="theme-switch-wrapper">
+                <button id="themeToggleButton" class="theme-toggle-button" type="button" aria-label="切换深浅色模式">
+                    <i class="fas fa-sun theme-icon theme-icon--sun" aria-hidden="true"></i>
+                    <i class="fas fa-moon theme-icon theme-icon--moon" aria-hidden="true"></i>
+                </button>
+            </div>
         </div>
-      </header>
-      <form class="login-form" id="login-form">
-        <div class="field">
-          <label for="password" class="field-label">访问口令</label>
-          <div class="input-wrapper">
-            <i class="fa-solid fa-lock" aria-hidden="true"></i>
-            <input type="password" id="password" placeholder="请输入密码" autocomplete="current-password" required
-              oninput="this.value = this.value.replace(/[^\x00-\x7F]/g, '')">
-          </div>
+
+        <div class="search-area" id="searchArea">
+            <button type="button" class="mobile-close-btn" id="mobileSearchClose" aria-label="关闭搜索">
+                <i class="fas fa-times" aria-hidden="true"></i>
+            </button>
+            <div class="search-container">
+                <input type="text" id="searchInput" class="search-input" placeholder="搜索歌曲、歌手或专辑...">
+                <div class="source-select-wrapper" id="sourceSelectWrapper">
+                    <button id="sourceSelectButton" class="source-select-btn" type="button" aria-haspopup="listbox" aria-expanded="false">
+                        <span id="sourceSelectLabel">网易云音乐</span>
+                        <i class="fas fa-chevron-down caret-icon" aria-hidden="true"></i>
+                    </button>
+                    <div id="sourceMenu" class="source-menu" role="listbox" aria-labelledby="sourceSelectButton"></div>
+                </div>
+                <button id="searchBtn" class="search-btn">
+                    <i class="fas fa-search"></i>
+                    <span>搜索</span>
+                </button>
+            </div>
+            <div id="searchResults" class="search-results">
+                <div class="search-results-toolbar">
+                    <div class="import-dropdown">
+                        <button
+                            id="importSelectedBtn"
+                            class="import-selected-btn"
+                            type="button"
+                            disabled
+                            aria-haspopup="menu"
+                            aria-expanded="false"
+                        >
+                            <i class="fas fa-file-import" aria-hidden="true"></i>
+                            <span class="import-selected-label">导入已选</span>
+                            <span id="importSelectedCount" class="import-selected-count" aria-hidden="true"></span>
+                            <i class="fas fa-caret-down import-dropdown-caret" aria-hidden="true"></i>
+                        </button>
+                        <div class="import-dropdown-menu" id="importSelectedMenu" role="menu" hidden>
+                            <button id="importToPlaylist" class="import-dropdown-item" type="button" role="menuitem">
+                                导入到播放列表
+                            </button>
+                            <button id="importToFavorites" class="import-dropdown-item" type="button" role="menuitem">
+                                导入到收藏列表
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div id="searchResultsList" class="search-results-list"></div>
+            </div>
         </div>
-        <p class="login-hint">只有输入了正确口令的成员才能继续访问内容。</p>
-        <button type="submit">进入 Solara</button>
-      </form>
-      <footer class="login-footer" aria-live="polite">
-        <span class="status-message"><span class="status-dot" aria-hidden="true"></span>安全状态：受保护</span>
-      </footer>
-    </section>
-  </main>
-  <div id="notification" class="notification" role="status" aria-live="polite"></div>
-  <script>
-    (function () {
-      const storedExpiry = localStorage.getItem("authExpiry");
-      if (storedExpiry) {
-        localStorage.removeItem("authExpiry");
-      }
-    })();
-    const notification = document.getElementById("notification");
-    let notificationTimer;
-    const showNotification = (message, type = "success") => {
-      if (!notification) {
-        if (typeof window.alert === "function") {
-          window.alert(message);
-        }
-        return;
-      }
-      notification.textContent = message;
-      notification.className = `notification ${type}`;
-      notification.classList.add("show");
-      if (notificationTimer) {
-        clearTimeout(notificationTimer);
-      }
-      notificationTimer = window.setTimeout(() => {
-        notification.classList.remove("show");
-      }, 3000);
-    };
-    document.getElementById("login-form")?.addEventListener("submit", async (event) => {
-      event.preventDefault();
-      const pwdInput = document.getElementById("password");
-      const password = pwdInput instanceof HTMLInputElement ? pwdInput.value : "";
-      try {
-        const response = await fetch("/api/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({ password }),
-        });
-        if (response.ok) {
-          window.location.href = "/";
-          return;
-        }
-        showNotification("密码错误，请重试", "error");
-      } catch (error) {
-        console.error(error);
-        showNotification("登录出错，请稍后再试", "error");
-      }
-    });
-  </script>
+
+        <div class="main-content">
+            <div class="cover-area">
+                <div class="mobile-turntable" id="mobileTurntable">
+                    <div class="mobile-turntable__platter">
+                        <div class="album-cover" id="albumCover">
+                            <div class="placeholder">
+                                <i class="fas fa-music"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mobile-inline-lyrics" id="mobileInlineLyrics" aria-hidden="true">
+                    <div class="mobile-inline-lyrics__hint">
+                        <i class="fas fa-arrow-left"></i>
+                        轻触返回封面
+                    </div>
+                    <div class="mobile-inline-lyrics__scroll" id="mobileInlineLyricsScroll">
+                        <div class="mobile-inline-lyrics__content" id="mobileInlineLyricsContent"></div>
+                    </div>
+                </div>
+                <div class="current-song-info">
+                    <div class="current-song-title-row">
+                        <span class="current-song-title" id="currentSongTitle">选择一首歌曲开始播放</span>
+                        <button
+                            class="favorite-toggle current-favorite-btn"
+                            id="currentFavoriteToggle"
+                            type="button"
+                            aria-label="收藏当前歌曲"
+                            title="收藏当前歌曲"
+                        >
+                            <i class="far fa-heart" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                    <div class="current-song-artist" id="currentSongArtist">未知艺术家</div>
+                    <button class="mobile-quality-chip" id="mobileQualityToggle" type="button" aria-haspopup="menu" aria-expanded="false">
+                        <span id="mobileQualityLabel">极高音质</span>
+                        <i class="fas fa-chevron-down" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="mobile-panel" id="mobilePanel">
+                <div class="mobile-panel-header" id="mobilePanelHeader">
+                    <div class="mobile-panel-handle" aria-hidden="true"></div>
+                    <div class="playlist-tabs" role="tablist">
+                        <button
+                            id="mobilePlaylistTab"
+                            class="playlist-tab active"
+                            type="button"
+                            role="tab"
+                            aria-selected="true"
+                            data-target="playlist"
+                        >
+                            播放列表
+                        </button>
+                        <button
+                            id="mobileFavoritesTab"
+                            class="playlist-tab"
+                            type="button"
+                            role="tab"
+                            aria-selected="false"
+                            data-target="favorites"
+                        >
+                            收藏列表
+                        </button>
+                    </div>
+                    <div class="mobile-panel-actions">
+                        <div class="mobile-actions-group" id="mobilePlaylistActions" role="group" aria-label="播放列表操作" aria-hidden="false">
+                            <button
+                                id="mobileImportPlaylistBtn"
+                                class="mobile-panel-action-btn"
+                                type="button"
+                                aria-label="导入播放列表"
+                                title="导入播放列表"
+                            >
+                                <i class="fas fa-file-import" aria-hidden="true"></i>
+                            </button>
+                            <button
+                                id="mobileExportPlaylistBtn"
+                                class="mobile-panel-action-btn"
+                                type="button"
+                                aria-label="导出播放列表"
+                                title="导出播放列表"
+                                aria-disabled="true"
+                                disabled
+                            >
+                                <i class="fas fa-file-export" aria-hidden="true"></i>
+                            </button>
+                            <button
+                                id="mobileClearPlaylistBtn"
+                                class="mobile-panel-action-btn mobile-panel-clear-btn"
+                                type="button"
+                                aria-label="清空播放列表"
+                                title="清空播放列表"
+                                onclick="clearPlaylist()"
+                                hidden
+                                aria-hidden="true"
+                            >
+                                <i class="fas fa-trash" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                        <div class="mobile-actions-group" id="mobileFavoritesActions" role="group" aria-label="收藏列表操作" hidden aria-hidden="true">
+                            <button
+                                id="mobileAddAllFavoritesBtn"
+                                class="mobile-panel-action-btn"
+                                type="button"
+                                aria-label="全部添加到播放列表"
+                                title="全部添加到播放列表"
+                            >
+                                <i class="fas fa-plus-circle" aria-hidden="true"></i>
+                            </button>
+                            <button
+                                id="mobileImportFavoritesBtn"
+                                class="mobile-panel-action-btn"
+                                type="button"
+                                aria-label="导入收藏列表"
+                                title="导入收藏列表"
+                            >
+                                <i class="fas fa-file-import" aria-hidden="true"></i>
+                            </button>
+                            <button
+                                id="mobileExportFavoritesBtn"
+                                class="mobile-panel-action-btn"
+                                type="button"
+                                aria-label="导出收藏列表"
+                                title="导出收藏列表"
+                                aria-disabled="true"
+                                disabled
+                            >
+                                <i class="fas fa-file-export" aria-hidden="true"></i>
+                            </button>
+                            <button
+                                id="mobileClearFavoritesBtn"
+                                class="mobile-panel-action-btn mobile-panel-clear-btn"
+                                type="button"
+                                aria-label="清空收藏列表"
+                                title="清空收藏列表"
+                            >
+                                <i class="fas fa-trash" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                        <button id="mobilePanelClose" class="mobile-close-btn mobile-panel-action-btn" type="button" aria-label="收起播放面板">
+                            <i class="fas fa-chevron-down" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="playlist active empty" id="playlist" role="tabpanel" aria-labelledby="playlistTab">
+                    <div class="playlist-header">
+                        <div class="playlist-tabs" role="tablist">
+                            <button
+                                id="playlistTab"
+                                class="playlist-tab active"
+                                type="button"
+                                role="tab"
+                                aria-selected="true"
+                                data-target="playlist"
+                            >播放列表</button>
+                            <button
+                                id="favoritesTab"
+                                class="playlist-tab"
+                                type="button"
+                                role="tab"
+                                aria-selected="false"
+                                data-target="favorites"
+                            >收藏列表</button>
+                        </div>
+                        <div class="playlist-actions-tray" role="group" aria-label="播放列表操作">
+                            <input
+                                id="importPlaylistInput"
+                                class="playlist-import-input"
+                                type="file"
+                                accept="application/json"
+                                hidden
+                            />
+                            <button
+                                class="playlist-action-btn playlist-action-btn--import"
+                                id="importPlaylistBtn"
+                                type="button"
+                                title="导入播放列表"
+                                aria-label="导入播放列表"
+                            >
+                                <i class="fas fa-file-import" aria-hidden="true"></i>
+                            </button>
+                            <button
+                                class="playlist-action-btn playlist-action-btn--export"
+                                id="exportPlaylistBtn"
+                                type="button"
+                                title="导出播放列表"
+                                aria-label="导出播放列表"
+                            >
+                                <i class="fas fa-file-export" aria-hidden="true"></i>
+                            </button>
+                            <button
+                                class="playlist-action-btn playlist-action-btn--clear clear-playlist-btn"
+                                id="clearPlaylistBtn"
+                                type="button"
+                                onclick="clearPlaylist()"
+                                title="清空播放列表"
+                                aria-label="清空播放列表"
+                            >
+                                <i class="fas fa-trash" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="playlist-scroll">
+                        <div class="playlist-items" id="playlistItems"></div>
+                    </div>
+                </div>
+                <div class="playlist favorites empty" id="favorites" role="tabpanel" aria-labelledby="favoritesTab" hidden>
+                    <div class="playlist-header">
+                        <div class="playlist-tabs" role="tablist">
+                            <button
+                                id="playlistTabSecondary"
+                                class="playlist-tab active"
+                                type="button"
+                                role="tab"
+                                aria-selected="true"
+                                data-target="playlist"
+                            >播放列表</button>
+                            <button
+                                id="favoritesTabSecondary"
+                                class="playlist-tab"
+                                type="button"
+                                role="tab"
+                                aria-selected="false"
+                                data-target="favorites"
+                            >收藏列表</button>
+                        </div>
+                        <div class="playlist-actions-tray" role="group" aria-label="收藏列表操作">
+                            <button
+                                class="playlist-action-btn"
+                                id="addAllFavoritesBtn"
+                                type="button"
+                                title="全部添加到播放列表"
+                                aria-label="全部添加到播放列表"
+                            >
+                                <i class="fas fa-plus-circle" aria-hidden="true"></i>
+                            </button>
+                            <input
+                                id="importFavoritesInput"
+                                class="playlist-import-input"
+                                type="file"
+                                accept="application/json"
+                                hidden
+                            />
+                            <button
+                                class="playlist-action-btn"
+                                id="importFavoritesBtn"
+                                type="button"
+                                title="导入收藏列表"
+                                aria-label="导入收藏列表"
+                            >
+                                <i class="fas fa-file-import" aria-hidden="true"></i>
+                            </button>
+                            <button
+                                class="playlist-action-btn"
+                                id="exportFavoritesBtn"
+                                type="button"
+                                title="导出收藏列表"
+                                aria-label="导出收藏列表"
+                            >
+                                <i class="fas fa-file-export" aria-hidden="true"></i>
+                            </button>
+                            <button
+                                class="playlist-action-btn playlist-action-btn--clear"
+                                id="clearFavoritesBtn"
+                                type="button"
+                                title="清空收藏列表"
+                                aria-label="清空收藏列表"
+                            >
+                                <i class="fas fa-trash" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="playlist-scroll">
+                        <div class="playlist-items" id="favoriteItems"></div>
+                    </div>
+                </div>
+                <div class="lyrics empty" id="lyrics" data-placeholder="default">
+                    <div class="lyrics-scroll" id="lyricsScroll">
+                        <div class="lyrics-content" id="lyricsContent"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <div class="transport-controls">
+                <button class="play-mode-btn transport-button transport-button--mode" id="playModeBtn" type="button" title="播放模式">
+                    <i class="fas fa-repeat"></i>
+                </button>
+                <button class="transport-button transport-button--prev" onclick="playPrevious()" type="button" title="上一曲"><i class="fas fa-backward-step"></i></button>
+                <button class="transport-button transport-button--play" id="playPauseBtn" type="button" title="播放 / 暂停"><i class="fas fa-play"></i></button>
+                <button class="transport-button transport-button--next" onclick="playNext()" type="button" title="下一曲"><i class="fas fa-forward-step"></i></button>
+                <button class="transport-button transport-button--queue" id="mobileQueueToggle" type="button" title="打开播放列表" aria-label="打开播放列表"><i class="fas fa-bars"></i></button>
+                <button class="transport-button transport-button--shuffle" id="shuffleToggleBtn" type="button" title="随机播放" aria-label="切换随机播放"><i class="fas fa-shuffle shuffle-icon shuffle-icon--off"></i></button>
+            </div>
+            <div class="progress-container">
+                <span id="currentTimeDisplay">00:00</span>
+                <input type="range" id="progressBar" min="0" max="0" step="0.1" value="0">
+                <span id="durationDisplay">00:00</span>
+            </div>
+            <div class="control-trailing">
+                <div class="audio-tools">
+                    <div class="player-quality">
+                        <button id="qualityToggle" class="player-quality-btn" type="button">
+                            <span id="qualityLabel">极高音质</span>
+                        </button>
+                        <div id="playerQualityMenu" class="player-quality-menu"></div>
+                    </div>
+                    <div class="volume-container">
+                        <i id="volumeIcon" class="fas fa-volume-up"></i>
+                        <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="0.8">
+                    </div>
+                </div>
+                <button id="loadOnlineBtn" title="聚合所有雷达，探索新音乐">
+                    <span class="btn-text"><i class="fas fa-satellite-dish"></i> 探索雷达</span>
+                    <span class="loader" style="display: none;"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="mobile-overlay-scrim" id="mobileOverlayScrim"></div>
+
+    <audio id="audioPlayer" preload="metadata" playsinline></audio>
+
+<!-- 通知容器 -->
+<div id="notification" class="notification"></div>
+
+<!-- 调试信息容器 -->
+<div id="debugInfo" class="debug-info"></div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="js/index.js"></script>
+<script>
+    if (window.__SOLARA_IS_MOBILE) {
+        const mobileScript = document.createElement('script');
+        mobileScript.src = 'js/mobile.js';
+        mobileScript.async = false;
+        mobileScript.defer = false;
+        document.body.appendChild(mobileScript);
+    }
+</script>
 </body>
 </html>
