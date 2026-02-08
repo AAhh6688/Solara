@@ -5566,7 +5566,9 @@ const EXPLORE_RADAR_GENRES = [
     "华语",
     "粤语",
     "影视",
-    "KYV",
+    "快乐",
+    "放松",
+    "KTV",
     "轻音乐",
 ];
 
