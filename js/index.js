@@ -5561,17 +5561,11 @@ function updateOnlineHighlight() {
 }
 
 const EXPLORE_RADAR_GENRES = [
-    "欧美流行",
-    "影视经典",
-    "清晨",
-    "抖音",
+    "流行",
     "古风",
-    "清新",
-    "粤语",
-    "旅行",
-    "快乐",
-    "放松",
     "华语",
+    "粤语",
+    "影视",
     "KYV",
     "轻音乐",
 ];
