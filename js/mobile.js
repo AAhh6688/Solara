@@ -124,6 +124,75 @@
         closeMobilePanelImpl();
     }
 
+    // 新增：初始化设置面板
+    function initSettingsPanel() {
+        const settingsBtn = document.getElementById("mobileSettingsBtn");
+        const settingsPanel = document.getElementById("settingsPanel");
+        const settingsClose = document.getElementById("settingsClose");
+        const fontSizeSlider = document.getElementById("fontSizeSlider");
+        const fontSizeLabel = document.getElementById("fontSizeLabel");
+        if (!settingsBtn || !settingsPanel) return;
+        
+        // 加载保存的设置
+        const savedTheme = localStorage.getItem("solara-theme") || "light";
+        const savedFontSize = localStorage.getItem("solara-font-size") || "3";
+        
+        // 应用主题
+        document.body.setAttribute("data-theme", savedTheme);
+        document.body.setAttribute("data-font-size", savedFontSize);
+        
+        // 更新主题按钮状态
+        document.querySelectorAll(".theme-option").forEach(btn => {
+            if (btn.dataset.theme === savedTheme) {
+                btn.classList.add("active");
+            } else {
+                btn.classList.remove("active");
+            }
+            btn.addEventListener("click", () => {
+                const theme = btn.dataset.theme;
+                document.body.setAttribute("data-theme", theme);
+                localStorage.setItem("solara-theme", theme);
+                document.querySelectorAll(".theme-option").forEach(b => b.classList.remove("active"));
+                btn.classList.add("active");
+            });
+        });
+
+        // 字体大小标签
+        const fontSizeLabels = ["极小", "小", "适中", "大", "极大"];
+        if (fontSizeSlider) {
+            fontSizeSlider.value = savedFontSize;
+            if (fontSizeLabel) fontSizeLabel.textContent = fontSizeLabels[parseInt(savedFontSize) - 1];
+            fontSizeSlider.addEventListener("input", (e) => {
+                const size = e.target.value;
+                document.body.setAttribute("data-font-size", size);
+                localStorage.setItem("solara-font-size", size);
+                if (fontSizeLabel) fontSizeLabel.textContent = fontSizeLabels[parseInt(size) - 1];
+            });
+        }
+
+        // 打开设置
+        settingsBtn.addEventListener("click", () => {
+            settingsPanel.classList.add("show");
+            settingsPanel.setAttribute("aria-hidden", "false");
+        });
+
+        // 关闭设置
+        if (settingsClose) {
+            settingsClose.addEventListener("click", () => {
+                settingsPanel.classList.remove("show");
+                settingsPanel.setAttribute("aria-hidden", "true");
+            });
+        }
+
+        // 点击外部关闭
+        settingsPanel.addEventListener("click", (e) => {
+            if (e.target === settingsPanel) {
+                settingsPanel.classList.remove("show");
+                settingsPanel.setAttribute("aria-hidden", "true");
+            }
+        });
+    }
+
     function initializeMobileUIImpl() {
         if (initialized || !document.body) {
             return;
@@ -157,6 +226,10 @@
         if (dom.mobileQueueToggle) {
             dom.mobileQueueToggle.addEventListener("click", () => openMobilePanelImpl("playlist"));
         }
+
+        // 初始化设置面板
+        initSettingsPanel();
+
         const handleGlobalPointerDown = (event) => {
             if (!document.body) {
                 return;
