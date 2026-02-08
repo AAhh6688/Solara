@@ -5563,7 +5563,6 @@ function updateOnlineHighlight() {
 const EXPLORE_RADAR_GENRES = [
     "流行",
     "古风",
-    "华语",
     "轻音乐",
 ];
 
